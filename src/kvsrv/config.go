@@ -1,19 +1,22 @@
 package kvsrv
 
-import "6.5840/labrpc"
-import "testing"
-import "os"
+import (
+	"os"
+	"testing"
 
-//import "log"
-import crand "crypto/rand"
-import "math/big"
-import "math/rand"
-import "encoding/base64"
-import "sync"
-import "runtime"
-import "fmt"
-import "time"
-import "sync/atomic"
+	"6.5840/labrpc"
+
+	//import "log"
+	crand "crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"math/big"
+	"math/rand"
+	"runtime"
+	"sync"
+	"sync/atomic"
+	"time"
+)
 
 const SERVERID = 0
 
@@ -36,7 +39,6 @@ type config struct {
 	t            *testing.T
 	net          *labrpc.Network
 	kvserver     *KVServer
-	endname      string // name of the server's sending ClientEnd
 	clerks       map[*Clerk]string
 	nextClientId int
 	start        time.Time // time at which make_config() was called
@@ -159,7 +161,7 @@ func (cfg *config) op() {
 // and some performance numbers.
 func (cfg *config) end() {
 	cfg.checkTimeout()
-	if cfg.t.Failed() == false {
+	if !cfg.t.Failed() {
 		t := time.Since(cfg.t0).Seconds()  // real time
 		nrpc := cfg.rpcTotal() - cfg.rpcs0 // number of RPC sends
 		ops := atomic.LoadInt32(&cfg.ops)  //  number of clerk get/put/append calls

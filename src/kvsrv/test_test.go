@@ -117,7 +117,8 @@ func spawn_clients_and_wait(t *testing.T, cfg *config, ncli int, fn func(me int,
 		ok := <-ca[cli]
 		//log.Printf("spawn_clients_and_wait: client %d is done\n", cli)
 		if ok == false {
-			t.Fatalf("failure")
+			t.Logf("failure\n")
+			runtime.Goexit()
 		}
 	}
 }
@@ -174,7 +175,7 @@ func checkConcurrentAppends(t *testing.T, v string, counts []int) {
 
 // is ov in nv?
 func inHistory(ov, nv string) bool {
-	return strings.Index(nv, ov) != -1
+	return strings.Contains(nv, ov)
 }
 
 func randValue(n int) string {
@@ -250,11 +251,13 @@ func GenericTest(t *testing.T, nclients int, unreliable bool, randomkeys bool) {
 						if j > 0 {
 							o := "x " + strconv.Itoa(cli) + " " + strconv.Itoa(j-1) + " y"
 							if !inHistory(o, l) {
-								t.Fatalf("error: old %v not in return\n%v\n", o, l)
+								t.Logf("error: old %v not in return\n%v\n", o, l)
+								runtime.Goexit()
 							}
 						}
 						if inHistory(nv, l) {
-							t.Fatalf("error: new value %v in returned values\n%v\n", nv, l)
+							t.Logf("error: new value %v in returned values\n%v\n", nv, l)
+							runtime.Goexit()
 						}
 						last = NextValue(last, nv)
 					}
@@ -269,7 +272,8 @@ func GenericTest(t *testing.T, nclients int, unreliable bool, randomkeys bool) {
 					v := Get(cfg, myck, key, opLog, cli)
 					// the following check only makes sense when we're not using random keys
 					if !randomkeys && v != last {
-						t.Fatalf("get wrong value, key %v, wanted:\n%v\n, got\n%v\n", key, last, v)
+						t.Logf("get wrong value, key %v, wanted:\n%v\n, got\n%v\n", key, last, v)
+						runtime.Goexit()
 					}
 				}
 			}
@@ -470,7 +474,7 @@ func TestMemPutMany(t *testing.T) {
 	v := randValue(MEM)
 
 	cks := make([]*Clerk, NCLIENT)
-	for i, _ := range cks {
+	for i := range cks {
 		cks[i] = cfg.makeClient()
 	}
 
@@ -523,7 +527,7 @@ func TestMemGetMany(t *testing.T) {
 	cfg.deleteClient(ck)
 
 	cks := make([]*Clerk, NCLIENT)
-	for i, _ := range cks {
+	for i := range cks {
 		cks[i] = cfg.makeClient()
 	}
 
